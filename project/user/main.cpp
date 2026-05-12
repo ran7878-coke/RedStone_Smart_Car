@@ -40,10 +40,10 @@ zf_driver_pit system_pit;
 void system_pit_callback(void)
 {
         encoder_update();  // 编码器计算
-        printf("get_target_angle%f\n",get_target_angle());
-        printf("get_steer:%f\n",get_steer());
-        printf("get_gyro_z:%f\n",imu_dev.get_gyro_z()*0.01f);
-        printf("\n");
+        //printf("get_target_angle%f\n",get_target_angle());
+        //printf("get_steer:%f\n",get_steer());
+        //printf("get_gyro_z:%f\n",imu_dev.get_gyro_z()*0.01f);
+        //printf("\n");
 }
 
 int main(int, char**) 
@@ -77,7 +77,7 @@ int main(int, char**)
                 {
                     //system_delay_ms(100);
                     image_process();
-                    line_follow_pid_control();
+                    //line_follow_pid_control();
                 } 
 /*
                 float v_left  = get_left_speed_mps();
