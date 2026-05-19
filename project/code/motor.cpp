@@ -44,30 +44,30 @@ void motor_Init(void)
 
 }
 
-void set_left_speed(int8 duty)
+void set_left_speed(int duty)
 {
-     if(duty >= 0)                                                           // 正转
+     if(duty >= 0)                               // 正转
         {
-            drv8701e_dir_1.set_level(0);                                      // DIR输出高电平
-            drv8701e_pwm_1.set_duty(duty * (MOTOR1_PWM_DUTY_MAX / 100));       // 计算占空比
+            drv8701e_dir_1.set_level(0);         // DIR输出高电平
+            drv8701e_pwm_1.set_duty(duty);       // 计算占空比
         }
         else
         {
-            drv8701e_dir_1.set_level(1);                                      // DIR输出低电平
-            drv8701e_pwm_1.set_duty(-duty * (MOTOR1_PWM_DUTY_MAX / 100));      // 计算占空比
+            drv8701e_dir_1.set_level(1);         // DIR输出低电平
+            drv8701e_pwm_1.set_duty(-duty);      // 计算占空比
         }
 }
 
-void set_right_speed(int8 duty)
+void set_right_speed(int duty)
 {
-     if(duty >= 0)                                                           // 正转
+     if(duty >= 0)                               // 正转
         {
-            drv8701e_dir_2.set_level(0);                                      // DIR输出高电平
-            drv8701e_pwm_2.set_duty(duty * (MOTOR2_PWM_DUTY_MAX / 100));       // 计算占空比
+            drv8701e_dir_2.set_level(0);         // DIR输出高电平
+            drv8701e_pwm_2.set_duty(duty);       // 计算占空比
         }
         else
         {
-            drv8701e_dir_2.set_level(1);                                      // DIR输出低电平
-            drv8701e_pwm_2.set_duty(-duty * (MOTOR2_PWM_DUTY_MAX / 100));      // 计算占空比
+            drv8701e_dir_2.set_level(1);         // DIR输出低电平
+            drv8701e_pwm_2.set_duty(-duty);      // 计算占空比
         }
 }

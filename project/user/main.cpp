@@ -33,17 +33,19 @@
 ********************************************************************************************************************/
 
 #include "zf_common_headfile.hpp"
-
+#include "control.hpp"
 zf_driver_pit system_pit;
+uint16 t = 0;//调试用
 
 // 10ms中断
 void system_pit_callback(void)
 {
-        encoder_update();  // 编码器计算
-        //printf("get_target_angle%f\n",get_target_angle());
-        //printf("get_steer:%f\n",get_steer());
-        //printf("get_gyro_z:%f\n",imu_dev.get_gyro_z()*0.01f);
-        //printf("\n");
+    encoder_update();  // 编码器计算
+    //line_follow_pid_control(); //pid控制
+    // printf("get_target_angle%f\n",get_target_angle());
+    // printf("get_steer:%f\n",get_steer());
+    // printf("get_gyro_z:%f\n",imu_dev.get_gyro_z()*0.01f);
+    // printf("\n");
 }
 
 int main(int, char**) 
@@ -60,24 +62,41 @@ int main(int, char**)
     motor_Init();
     
 //******************************pit中断配置**********************************
-
     system_pit.init_ms(100, system_pit_callback);
-
+    
 //******************************pid参数配置**********************************
-    PID_Init(&TracePID,  3.5f, 0.0f,  2.5f,  50.0f,  0.0f);    // 图像→角度  Kp小 Kd大
-    PID_Init(&AnglePID,  0.3f, 0.0f,  3.5f,  50.0f,  0.0f);    // 角度→电机  Kp大 Kd中
-    PID_Init(&SpeedPID,  0.5f, 0.3f,  0.0f,  25.0f,   10.0f);    // 速度环     Kp小 Kd小
+    PID_Init(&TracePID,  0.08f, 0.0f,  0.005f,  100.0f,  0.0f);    // 图像→角度
+    PID_Init(&AnglePID,  0.0005f, 0.0f,  0.0f,  1.0f,  0.0f);    // 角速度环
+    PID_Init(&Speed_lPID,  15.0f, 0.1f,  0.0f,  700.0f,   10.0f);    // 速度环
+    PID_Init(&Speed_rPID,  15.0f, 0.1f,  0.0f,  700.0f,   10.0f);    // 速度环
+    PID_Init(&Delta_SpPID,  7.0f, 0.0f,  0.20f,  900.0f,   150.0f);    // 差速环
 
 //******************************主循环**********************************
 
             while(1)
             {
-
                 if(uvc_dev.wait_image_refresh() == 0)
                 {
                     //system_delay_ms(100);
+                    
+                    // if (t == 20)
+                    //     target_lspeed = target_rspeed = 12;
+                    // t++;  
+                    // if (t == 40)
+                    // {
+                    //     target_lspeed = 13;
+                    //     target_rspeed = 11;
+                    // }
+                    //     //target_lspeed = target_rspeed = 16;
+                    // if (t == 65)
+                    // {
+                    //     t = 0;
+                    //     target_lspeed = target_rspeed = 0;
+                    // }
+                    line_follow_pid_control(); //pid控制
+                    printf("samples:%f, %f, %f\n", steer, left_PWM, right_PWM);//调试输出用
                     image_process();
-                    //line_follow_pid_control();
+                    
                 } 
 /*
                 float v_left  = get_left_speed_mps();

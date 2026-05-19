@@ -25,8 +25,10 @@ float PID_Incremental_Calculate(PID_TypeDef *pid, float feedback, float setpoint
 float PID_Positional_Calculate(PID_TypeDef *pid, float feedback, float setpoint);
 void PID_Reset(PID_TypeDef *pid);
 
-extern PID_TypeDef TracePID;  
-extern PID_TypeDef AnglePID; 
-extern PID_TypeDef SpeedPID;  
+extern PID_TypeDef TracePID;
+extern PID_TypeDef AnglePID;
+extern PID_TypeDef Speed_lPID;
+extern PID_TypeDef Speed_rPID;
+extern PID_TypeDef Delta_SpPID;
 
 #endif

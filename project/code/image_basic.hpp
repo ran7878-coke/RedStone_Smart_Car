@@ -41,6 +41,7 @@ extern uint16 dir_r[IMAGE_H * 3];
 void image_process(void); //直接在中断或循环里调用此程序就可以循环执行了
 int16 limit_a_b(int16 x, int a, int b);
 int my_abs(int value);
+float get_center_error(void);
 
 extern zf_device_ips200 ips200;
 extern zf_device_uvc    uvc_dev;

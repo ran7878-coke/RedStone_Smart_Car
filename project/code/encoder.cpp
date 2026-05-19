@@ -33,8 +33,8 @@ void encoder_update(void)
     encoder_right = -encoder_quad_1.get_count();
 
     // ===================== 速度计算 =====================
-    speed_left_mps  = (encoder_left  * 100.0f / PULSE_PER_WHEEL_REV) * WHEEL_CIRCUMFERENCE;
-    speed_right_mps = (encoder_right * 100.0f / PULSE_PER_WHEEL_REV) * WHEEL_CIRCUMFERENCE;
+    speed_left_mps  = (encoder_left / PULSE_PER_WHEEL_REV) * WHEEL_CIRCUMFERENCE * 100;
+    speed_right_mps = (encoder_right / PULSE_PER_WHEEL_REV) * WHEEL_CIRCUMFERENCE * 100;
     speed_left_kmh  = speed_left_mps  * 3.6f;
     speed_right_kmh = speed_right_mps * 3.6f;
 

@@ -15,8 +15,8 @@
 #define MAX_DUTY        (30 )   // 最大 MAX_DUTY% 占空比
 
 void motor_Init(void);
-void set_left_speed(int8 duty);
-void set_right_speed(int8 duty);
+void set_left_speed(int duty);
+void set_right_speed(int duty);
 
 
 #endif

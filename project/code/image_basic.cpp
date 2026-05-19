@@ -516,6 +516,29 @@ void get_right(uint16 total_R)
 	}
 }
 
+// 获取有效中线（底部多行加权平均，抗干扰）
+float center_error = 0.0;
+uint16 sum = 0;
+uint16 cnt = 0;
+float get_center_error(void)
+{
+	sum = cnt = 0;
+    // 取图像底部30行（y从90到119，共30行），越靠近小车越重要
+    for(uint8 y = IMAGE_H - 30; y < IMAGE_H - 8; y++){
+        // 过滤无效值（0和超宽值）
+        if(center_line[y] > 5 && center_line[y] < IMAGE_W - 5){
+            sum += center_line[y];
+            cnt++;
+        }
+    }
+    // 无有效线时返回中心（不跑偏）
+    if(cnt == 0) return 0.0f;
+    
+    uint8 avg_mid = sum / cnt;
+    // 误差 = 中心 - 当前中线（正=偏右，负=偏左）
+    return (float)(CENTER_X - avg_mid);
+}
+
 //定义膨胀和腐蚀的阈值区间
 #define threshold_max	255*5//此参数可根据自己的需求调节
 #define threshold_min	255*2//此参数可根据自己的需求调节
@@ -623,7 +646,7 @@ if (get_start_point(IMAGE_H - 2))//找到起点了，再执行八领域，没找
 	// 补线函数调用（防护空数据）
 	find_flagpoint();
 	cross_fill(); 
-    ring_recognize();
+    //ring_recognize();
 }
 else{
 	//printf("没找到起点");
@@ -653,7 +676,6 @@ else{
 		ips200.draw_point(r_border[i], i, uesr_GREEN);//显示起点 显示右边线
 	}
 
-
 }
 
 
@@ -672,6 +694,6 @@ else{
 ***********************************************************
 ***********************************************************
 ***********************************************************
-y值最大*******************************************(188.120)
+y值最大*******************************************(160.120)
 
 */
