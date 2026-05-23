@@ -207,7 +207,7 @@ bool flag_r_conti = 1;      // 右边界连续标志
 bool flag_l_conti = 1;      // 左边界连续标志
 
 uint8 start_check = IMAGE_H - 10;  // 从底部往上20行开始
-
+uint8 end_check = 20; 
 void find_flagpoint(void)
 {
     uint16 i;
@@ -245,70 +245,90 @@ void find_flagpoint(void)
 
      // 边界连续性检查
     // 从下往上遍历（底部 → 顶部）
-    for(i = start_check; i > 30; i--) 
+    for(i = start_check; i > end_check; i--) 
     {
-        // ===================== 右边界 上下断裂检测 =====================
-        if( i+1 < IMAGE_H && (my_abs((int16)r_border[i] - (int16)r_border[i+1]) > 10 || r_border[i] == border_max) )
+         if(my_abs((int16)r_border[i] - (int16)r_border[i+1]) > 3
+          &&my_abs((int16)r_border[i] - (int16)r_border[i-1]) > 3)
         {
             flag_r_conti = 0;
-            // 下断裂点：只赋值第一次
+        }
+         if(my_abs((int16)l_border[i] - (int16)l_border[i+1]) > 3
+          &&my_abs((int16)l_border[i] - (int16)l_border[i-1]) > 3)
+        {
+            flag_l_conti = 0;
+        }
+        // ===================== 右边界 上下断裂检测 =====================
+        if( i+1 < IMAGE_H && (((int16)r_border[i] - (int16)r_border[i+1]) < -3 
+        &&my_abs((int16)r_border[i] - (int16)r_border[i-1]) < 3) )
+        {
+            // 上断裂点：只赋值第一次
+            if(r_break_up[1] == 0)
+            {
+                r_break_up[0] = r_border[i]; 
+                r_break_up[1] = i;
+                //printf("右上：X=%d, Y=%d\r\n", r_break_down[0], r_break_down[1]);
+                draw_3x3(r_break_up[0], r_break_up[1],uesr_RED);
+            }
+        }
+
+        if( i+1 < IMAGE_H && (((int16)r_border[i] - (int16)r_border[i-1]) < -3)
+        &&(my_abs((int16)r_border[i] - (int16)r_border[i+1]) < 3))
+        {
+            // 下断裂点
             if(r_break_down[1] == 0)
             {
                 r_break_down[0] = r_border[i]; 
                 r_break_down[1] = i;
-                //printf("右下：X=%d, Y=%d\r\n", r_break_down[0], r_break_down[1]);
-                //draw_3x3(r_break_down[0], r_break_down[1],uesr_RED);
-            }
-            // 上断裂点
-            else if(r_break_up[1] == 0)
-            {
-                r_break_up[0] = r_border[i+1]; 
-                r_break_up[1] = i+1;
-                //printf("右上：X=%d, Y=%d\r\n", r_break_up[0], r_break_up[1]);
-                //draw_3x3(r_break_up[0], r_break_up[1],uesr_RED);
+                //printf("右下：X=%d, Y=%d\r\n", r_break_up[0], r_break_up[1]);
+                draw_3x3(r_break_down[0], r_break_down[1],uesr_RED);
             }
         }
 
         // ===================== 左边界 上下断裂检测 =====================
-        if( i+1 < IMAGE_H && (my_abs((int16)l_border[i] - (int16)l_border[i+1]) > 10 || l_border[i] == border_min) )
+        if( i+1 < IMAGE_H && (((int16)l_border[i] - (int16)l_border[i+1]) > 3)
+        &&(my_abs((int16)l_border[i] - (int16)l_border[i-1]) < 3))
         {
-            flag_l_conti = 0;
-            // 下断裂点：只赋值第一次
+            // 上断裂点：只赋值第一次
+            if(l_break_up[1] == 0)
+            {
+                l_break_up[0] = l_border[i]; 
+                l_break_up[1] = i;
+                //printf("左下：X=%d, Y=%d\r\n", l_break_down[0], l_break_down[1]);
+                draw_3x3(l_break_up[0], l_break_up[1],uesr_RED);
+            }
+        }
+        if( i+1 < IMAGE_H && (((int16)l_border[i] - (int16)l_border[i-1]) > 3)
+        &&(my_abs((int16)l_border[i] - (int16)l_border[i+1]) < 3))
+        {
             if(l_break_down[1] == 0)
             {
                 l_break_down[0] = l_border[i]; 
                 l_break_down[1] = i;
-                //printf("左下：X=%d, Y=%d\r\n", l_break_down[0], l_break_down[1]);
-                //draw_3x3(l_break_down[0], l_break_down[1],uesr_RED);
-            }
-            // 上断裂点
-            else if(l_break_up[1] == 0)
-            {
-                l_break_up[0] = l_border[i+1]; 
-                l_break_up[1] = i+1;
                 //printf("左上：X=%d, Y=%d\r\n", l_break_up[0], l_break_up[1]);
-                //draw_3x3(l_break_up[0], l_break_up[1],uesr_RED);
+                draw_3x3(l_break_down[0], l_break_down[1],uesr_RED);
             }
         }
 
-        if(r_border[i]<=r_border[i+2] && r_border[i]<=r_border[i-2]
-         &&r_border[i]<r_border[i+3] && r_border[i]<r_border[i-3]
-         &&r_border[i]!=border_max && r_border[i+2]!=border_max
-         &&r_border[i+3]!=border_max && r_border[i-1]!=border_max
-         &&r_border[i-2]!=border_max && r_border[i-3]!=border_max)
+        if(r_border[i]<=r_border[i+4] && r_border[i]<=r_border[i-4]
+         &&r_border[i]<r_border[i+5] && r_border[i]<r_border[i-5]
+         &&r_border[i]!=border_max 
+         &&r_border[i+4]!=border_max && r_border[i+5]!=border_max
+         &&r_border[i-4]!=border_max && r_border[i-5]!=border_max
+         &&bin_image[i-2][r_border[i]+10] == 0)
         {
             flag_r_p = 1;
             r_p[0]=r_border[i];
             r_p[1]=i;
             //printf("rp：X=%d, Y=%d\r\n", r_p[0], r_p[1]);
-            draw_3x3(r_p[0],r_p[1],uesr_RED);
+            draw_3x3(r_p[0],r_p[1],uesr_BLUE);
         }
 
-        if(l_border[i]>=l_border[i+2] && l_border[i]>=l_border[i-2]
-         &&l_border[i]>l_border[i+3] && l_border[i]>l_border[i-3]
-         &&l_border[i]!=border_min && l_border[i+2]!=border_min
-         &&l_border[i+3]!=border_min && l_border[i-1]!=border_min
-         &&l_border[i-2]!=border_min && l_border[i-3]!=border_min)
+        if(l_border[i]>=l_border[i+4] && l_border[i]>=l_border[i-4]
+         &&l_border[i]>l_border[i+5] && l_border[i]>l_border[i-5]
+         &&l_border[i]!=border_min 
+         &&l_border[i+4]!=border_min && l_border[i+5]!=border_min
+         &&l_border[i-4]!=border_min && l_border[i-5]!=border_min
+         &&bin_image[i-2][l_border[i]-10] == 0)
         {
             flag_l_p = 1;
             l_p[0]=l_border[i];
@@ -318,15 +338,11 @@ void find_flagpoint(void)
     }
 
     // 在断裂处的邻域内寻找拐点
-    if ((!flag_r_v_down) && flag_l_conti && r_break_down[1] != 0)  //右下v点未找到且左边线连续
+    if ((!flag_r_v_down) && flag_l_conti)  //右下v点未找到且左边线连续
     {
-        uint16 start = r_break_down[1] + 10;
-        uint16 end   = r_break_down[1] - 10;
-        if(start > IMAGE_H-1) start = IMAGE_H-1;
-        if(end < 31) end = 31;
-        for (i = start; i > end; i--) 
+        for (i = start_check; i > end_check; i--) 
         {
-            uint16 index = find_point_index_r(r_border[i], i);   //这里寻找r_border在points_r的位置
+            uint16 index = i;   //这里寻找r_border在points_r的位置
             //补充一下points数组的定义
             //points_l[l_data_statics][0] = center_point_l[0];//x
             //points_l[l_data_statics][1] = center_point_l[1];//y
@@ -355,14 +371,9 @@ void find_flagpoint(void)
 
     if ((!flag_r_v_up) && r_break_up[1] != 0)  //右上v点未找到且左边线连续
     {
-        uint16 start = r_break_up[1] + 15;
-        uint16 end   = r_break_up[1] - 15;
-        if(start > IMAGE_H-1) start = IMAGE_H-1;
-        if(end < 31) end = 31;
- 
-       for (i = start; i > end; i--) 
+       for (i = start_check; i > end_check; i--) 
         {
-                uint16 index = find_point_index_r(r_border[i], i);   //这里寻找r_border在points_r的位置
+                uint16 index = i;   //这里寻找r_border在points_r的位置
 
                 // 防越界保护
                 if(index == 0xFFFF || index < 3 || index + 3 >= data_stastics_r)
@@ -385,16 +396,12 @@ void find_flagpoint(void)
         }  
     }
 
-    if ((!flag_l_v_down) && flag_r_conti && l_break_down[1] != 0)  //左下v点未找到且右边线连续
+    if ((!flag_l_v_down) && flag_r_conti)  //左下v点未找到且右边线连续
     {
-        uint16 start = l_break_down[1] + 10;
-        uint16 end   = l_break_down[1] - 10;
-        if(start > IMAGE_H-1) start = IMAGE_H-1;
-        if(end < 31) end = 31;
 
-        for (i = start; i > end; i--) 
+        for (i = start_check; i >end_check; i--) 
         {
-                uint16 index = find_point_index_l(l_border[i], i);   //这里寻找r_border在points_r的位置
+                uint16 index = i;
 
                 // 防越界保护
                 if(index == 0xFFFF || index < 3 || index + 3 >= data_stastics_l)
@@ -408,7 +415,7 @@ void find_flagpoint(void)
                     l_v_down[0] = points_l[index][0];
                     l_v_down[1] = points_l[index][1];
                     flag_l_v_down = 1;
-                    printf("lvdown\n");
+                    //printf("lvdown\n");
                     //ips200.draw_point(l_v_down[0], l_v_down[1], uesr_GREEN);
                     break;
                 }
@@ -416,30 +423,26 @@ void find_flagpoint(void)
         }  
     }
 
-    if ((!flag_l_v_up) && flag_r_conti && l_break_up[1] != 0)  //左上v点未找到且右边线连续
+    if ((!flag_l_v_up) && flag_r_conti)  //左上v点未找到且右边线连续
     {
-        uint16 start = l_break_up[1] + 10;
-        uint16 end   = l_break_up[1] - 10;
-        if(start > IMAGE_H-1) start = IMAGE_H-1;
-        if(end < 31) end = 31;
 
-        for (i = start; i > end; i--) 
+        for (i = start_check; i > end_check; i--) 
         {
-                uint16 index = find_point_index_l(l_border[i], i);   //这里寻找r_border在points_r的位置
+                uint16 index = i;
 
                 // 防越界保护
                 if(index == 0xFFFF || index < 3 || index + 3 >= data_stastics_l)
                     continue;
 
-                if (points_l[index-8][0]>points_l[index][0]
-                &&points_l[index-8][1]<points_l[index][1]
-                &&points_l[index+8][0]<points_l[index][0]
-                &&points_l[index+8][1]<points_l[index][1])
+                if (points_l[index-3][0]<points_l[index][0]
+                &&points_l[index-3][1]<points_l[index][1]
+                &&points_l[index+3][0]>points_l[index][0]
+                &&points_l[index+3][1]<points_l[index][1])
                 {
                     l_v_up[0] = points_l[index][0];
                     l_v_up[1] = points_l[index][1];
                     flag_l_v_up = 1;
-                    printf("lvup\n");
+                    //printf("lvup\n");
                     //ips200.draw_point(l_v_up[0], l_v_up[1], uesr_GREEN);
                     break;
                 }
@@ -491,26 +494,21 @@ void cross_fill(void)
 {
     if(flag_r_conti == 0 && flag_l_conti == 0)
     {
-        // 右断裂点有效
-        bool r_break_ok = (r_break_down[1] != 0 && l_break_up[1] != 0)
-                    && (r_break_down[1] > 10 && r_break_down[1] < IMAGE_H - 10)
-                    && (r_break_up[1] > 10 && r_break_up[1] < IMAGE_H - 10)
-                    && (r_break_down[1] - r_break_up[1] > 5);  
-
-        // 左断裂点有效
-        bool l_break_ok = (l_break_down[1] != 0 && l_break_up[1] != 0)
-                    && (l_break_down[1] > 10 && l_break_down[1] < IMAGE_H - 10)
-                    && (l_break_up[1] > 10 && l_break_up[1] < IMAGE_H - 10)
-                    && (l_break_down[1] - l_break_up[1] > 5);  // 足够高度 → 自动保证下>上
-        // 左右断裂位置对齐
-        bool y_pos_close = (my_abs((int16)r_break_down[1] - l_break_down[1]) < 20)
-                        && (my_abs((int16)r_break_up[1] - l_break_up[1]) < 20);
-
-        if(r_break_ok && l_break_ok && y_pos_close)
+        if(r_break_down[1] != 0 && r_break_up[1] != 0
+         &&l_break_down[1] != 0 && l_break_up[1] != 0)
         {
             connect_points(r_break_down, r_break_up, r_border);
             connect_points(l_break_down, l_break_up, l_border);
-            printf("补线\n");
+            //printf("右上：X=%d, Y=%d\r\n", r_break_up[0], r_break_up[1]);
+            //printf("右下：X=%d, Y=%d\r\n", r_break_down[0], r_break_down[1]);
+            //printf("左上：X=%d, Y=%d\r\n", l_break_up[0], l_break_up[1]);
+            //printf("左下：X=%d, Y=%d\r\n", l_break_down[0], l_break_down[1]);
+            //printf("补线\n");
+        }
+        else if(r_break_up[1] != 0 && l_break_up[1] != 0)
+        {
+            connect_points(screen_r_down, r_break_up, r_border);
+            connect_points(screen_l_down, l_break_up, l_border);
         }
     }
 }
@@ -639,7 +637,7 @@ void ring_recognize(void)
         case 1:
             connect_points(r_v_down, r_p, r_border);
             // 【初入环岛】：右拐点消失，断裂稳定
-            if(!flag_r_v_down && !flag_r_conti)
+            if(!flag_r_v_down && !flag_r_conti && r_p[1]>30)
             {
                 right_ring = 2;
                 connect_points(r_p, screen_r_down, r_border);
@@ -666,7 +664,7 @@ void ring_recognize(void)
         case 3:
             connect_points(r_v_up, r_p, r_border);
             // 【即将入环】：出口拐点稳定，断裂持续
-            if(flag_r_v_up && !flag_r_conti)
+            if(flag_r_v_up && !flag_r_conti && r_v_up[1]>30) 
             {
                 right_ring = 4;
                 connect_points(r_v_up, screen_l_down, l_border);
@@ -677,8 +675,7 @@ void ring_recognize(void)
         case 4:
             connect_points(r_v_up, screen_l_down, l_border);
             // 【完全入环】：双侧边界恢复有效连续
-            if(flag_r_conti && flag_l_conti
-                && r_break_down[1] == 0 && l_break_down[1] == 0)
+            if(flag_r_conti && flag_l_conti)
             {
                 right_ring = 5;
                 printf("右状态5\n");

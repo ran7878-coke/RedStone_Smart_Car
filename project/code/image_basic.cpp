@@ -190,7 +190,7 @@ uint8 get_start_point(uint8 start_row)
 	start_point_r[1] = 0;//y
 
 		//从中间往左边，先找起点
-	for (i = IMAGE_W / 2; i > border_min; i--)
+	for (i = IMAGE_W / 2; i >= border_min; i--)
 	{
 		start_point_l[0] = i;//x
 		start_point_l[1] = start_row;//y
@@ -590,18 +590,21 @@ void image_draw_rectan(uint8(*image)[IMAGE_W])
 {
 
 	uint8 i = 0;
+	uint8 j = 0;
 	for (i = 0; i < IMAGE_H; i++)
 	{
 		image[i][0] = 0;
-		image[i][1] = 0;
+        image[i][1] = 0;
 		image[i][IMAGE_W - 1] = 0;
 		image[i][IMAGE_W - 2] = 0;
 
 	}
 	for (i = 0; i < IMAGE_W; i++)
 	{
-		image[0][i] = 0;
-		image[1][i] = 0;
+		for(j=0;j<20;j++)
+		{
+			image[j][i] = 0;
+		}
 		image[IMAGE_H-1][i] = 0;
 
 	}
@@ -646,7 +649,7 @@ if (get_start_point(IMAGE_H - 2))//找到起点了，再执行八领域，没找
 	// 补线函数调用（防护空数据）
 	find_flagpoint();
 	cross_fill(); 
-    //ring_recognize();
+    ring_recognize();
 }
 else{
 	//printf("没找到起点");
@@ -672,8 +675,8 @@ else{
 		//求中线最好最后求，不管是补线还是做状态机，全程最好使用一组边线，中线最后求出，不能干扰最后的输出
 		//当然也有多组边线的找法，但是个人感觉很繁琐，不建议
 		ips200.draw_point(center_line[i], i, uesr_GREEN);//显示起点 显示中线	
-		ips200.draw_point(l_border[i], i, uesr_GREEN);//显示起点 显示左边线
-		ips200.draw_point(r_border[i], i, uesr_GREEN);//显示起点 显示右边线
+		ips200.draw_point(l_border[i], i, uesr_RED);//显示起点 显示左边线
+		ips200.draw_point(r_border[i], i, uesr_RED);//显示起点 显示右边线
 	}
 
 }

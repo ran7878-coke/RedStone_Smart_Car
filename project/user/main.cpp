@@ -94,7 +94,7 @@ int main(int, char**)
                     //     target_lspeed = target_rspeed = 0;
                     // }
                     line_follow_pid_control(); //pid控制
-                    printf("samples:%f, %f, %f\n", steer, left_PWM, right_PWM);//调试输出用
+                    //printf("samples:%f, %f, %f\n", target_omega, left_PWM, right_PWM);//调试输出用
                     image_process();
                     
                 } 

@@ -47,6 +47,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/control.cpp.o.d"
   "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/encoder.cpp.o"
   "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/encoder.cpp.o.d"
+  "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.o"
+  "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.o.d"
   "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.cpp.o"
   "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.cpp.o.d"
   "CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_elements.cpp.o"

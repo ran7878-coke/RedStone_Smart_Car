@@ -705,6 +705,30 @@ home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/en
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/project.dir/build.make CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/encoder.cpp.s
 .PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/encoder.cpp.s
 
+home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.o: home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.o
+.PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.o
+
+# target to build an object file
+home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/project.dir/build.make CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.o
+.PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.o
+
+home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.i: home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.i
+.PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.i
+
+# target to preprocess a source file
+home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/project.dir/build.make CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.i
+.PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.i
+
+home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.s: home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.s
+.PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.s
+
+# target to generate assembly for a file
+home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/project.dir/build.make CMakeFiles/project.dir/home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.s
+.PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.cpp.s
+
 home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.o: home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.cpp.o
 .PHONY : home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.o
 
@@ -906,6 +930,9 @@ help:
 	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/encoder.o"
 	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/encoder.i"
 	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/encoder.s"
+	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.o"
+	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.i"
+	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image.s"
 	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.o"
 	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.i"
 	@echo "... home/raku/LS2K0300_Library/LS2K300_Library/RedStone_raku_project/project/code/image_basic.s"
