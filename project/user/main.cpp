@@ -65,11 +65,11 @@ int main(int, char**)
     system_pit.init_ms(5, system_pit_callback);
     
 //******************************pid参数配置**********************************
-    PID_Init(&TracePID,  0.05f, 0.0f,  0.05f,  100.0f,  0.0f);    // 图像→角度
-    PID_Init(&AnglePID,  0.0005f, 0.0f,  0.0f,  1.0f,  0.0f);    // 角速度环
-    PID_Init(&Speed_lPID,  1400.0f, 8.5f,  0.0f,  3000.0f,   30.0f);    // 速度环
-    PID_Init(&Speed_rPID,  1400.0f, 8.5f,  0.0f,  3000.0f,   30.0f);    // 速度环
-    PID_Init(&Delta_SpPID,  1000.0f, 1.0f,  0.00f,  900.0f,   150.0f);    // 差速环
+    PID_Init(&TracePID,  0.8f, 0.0f,  0.5f,  100.0f,  0.0f);    // 图像→角度
+    PID_Init(&AnglePID,  0.01f, 0.0f,  0.0f,  20.0f,  0.0f);    // 角速度环
+    PID_Init(&Speed_lPID,  2000.0f, 8.5f,  0.0f,  800.0f,   400.0f);    // 速度环（位置式）
+    PID_Init(&Speed_rPID,  2000.0f, 8.5f,  0.0f,  800.0f,   400.0f);    // 速度环（位置式）
+    PID_Init(&Delta_SpPID,  15000.0f, 5.0f,  0.00f,  600.0f,   600.0f);    // 差速环（位置式）
 
 //******************************主循环**********************************
 while(1)
@@ -85,7 +85,7 @@ while(1)
                     
                    //if (t == 400)
                    //{
-                   //     target_omega=50;
+                   //     target_omega = 5;
                    //}
                    
                    //t++;
@@ -95,11 +95,11 @@ while(1)
                      //    target_rspeed = 11;
                      //}
                         //target_lspeed = target_rspeed = 16;
-                    //if (t == 650)
+                    //if (t == 600)
                     //{
-                    //   t = 0;
-                    //   target_omega=0;
-                    //   target_lspeed = target_rspeed = 0.5;
+                    //   t = 0;;
+                    //   target_omega = 0;
+                       //target_lspeed = target_rspeed = 0.5;
                     //}
                     printf("samples:%f, %f, %f, %f\n",target_lspeed, target_rspeed, current_lspeed, current_rspeed);//调试输出用
                     //pid_tuner_check();

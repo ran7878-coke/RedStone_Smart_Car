@@ -38,7 +38,7 @@ float raw_rspeed = 0;
 uint8 t_n = 0;//中断计数
 
 
-const float encoder_filter = 0.01;//编码器滤波系数(越小越强)
+const float encoder_filter = 0.05;//编码器滤波系数(越小越强)
 
 // 限幅函数
 int constrain(int val, int min_val, int max_val)
@@ -104,16 +104,16 @@ void line_follow_pid_control(void)
     //target_speed = 0;
     average_speed = (current_lspeed + current_rspeed) / 2;
     //target_omega = 0;//6.28/5;
-    target_lspeed = 1.2 + kf_turn * smooth_target_omega;
-    target_rspeed = 1.2 - kf_turn * smooth_target_omega;
+    target_lspeed = 1.7 + kf_turn * smooth_target_omega;
+    target_rspeed = 1.7 - kf_turn * smooth_target_omega;
     //输出PWM = 前馈 + 线速度环PI输出
-    PWM_l = Feed_Forward_l(target_lspeed) + PID_Incremental_Calculate(&Speed_lPID, current_lspeed, target_lspeed);
-    PWM_r = Feed_Forward_r(target_rspeed) + PID_Incremental_Calculate(&Speed_rPID, current_rspeed, target_rspeed);
+    PWM_l = Feed_Forward_l(target_lspeed) + PID_Positional_Calculate(&Speed_lPID, current_lspeed, target_lspeed);
+    PWM_r = Feed_Forward_r(target_rspeed) + PID_Positional_Calculate(&Speed_rPID, current_rspeed, target_rspeed);
 
     // ===================== 4. 差速环：编码器 → 差速 =====================
-    target_delta_Sp = kf_turn * smooth_target_omega * 2;
+    target_delta_Sp = kf_turn * smooth_target_omega * 4;
     current_delta_Sp = current_lspeed - current_rspeed;
-    PWM_delta = PID_Incremental_Calculate(&Delta_SpPID, current_delta_Sp, target_delta_Sp);
+    PWM_delta = PID_Positional_Calculate(&Delta_SpPID, current_delta_Sp, target_delta_Sp);
 
     // ===================== 6. 合成最终PWM，限幅（防止超范围） =====================
     left_PWM = PWM_l + PWM_delta;
@@ -131,52 +131,3 @@ void line_follow_pid_control(void)
     set_right_speed((int)right_PWM);
 }
 
-// ===================== 热加载 PID 参数（文件方式）=====================
-#define TUNE_FILE "/home/root/pid_tune.txt"
-
-void pid_tuner_check(void)
-{
-    static int counter = 0;
-    if (++counter < 30) return;   // 约1秒检查一次
-    counter = 0;
-
-    FILE *f = fopen(TUNE_FILE, "r");
-    if (!f) return;
-
-    char key[32];
-    float val;
-    bool changed = false;
-
-    while (fscanf(f, "%31s %f", key, &val) == 2)
-    {
-        if (key[0] == '#') { while (fgetc(f) != '\n' && !feof(f)); continue; }
-
-        if      (strcmp(key, "Speed_l_Kp") == 0)  { Speed_lPID.Kp = val; changed = true; }
-        else if (strcmp(key, "Speed_l_Ki") == 0)  { Speed_lPID.Ki = val; changed = true; }
-        else if (strcmp(key, "Speed_l_Kd") == 0)  { Speed_lPID.Kd = val; changed = true; }
-        else if (strcmp(key, "Speed_r_Kp") == 0)  { Speed_rPID.Kp = val; changed = true; }
-        else if (strcmp(key, "Speed_r_Ki") == 0)  { Speed_rPID.Ki = val; changed = true; }
-        else if (strcmp(key, "Speed_r_Kd") == 0)  { Speed_rPID.Kd = val; changed = true; }
-        else if (strcmp(key, "Delta_Sp_Kp") == 0) { Delta_SpPID.Kp = val; changed = true; }
-        else if (strcmp(key, "Delta_Sp_Ki") == 0) { Delta_SpPID.Ki = val; changed = true; }
-        else if (strcmp(key, "Delta_Sp_Kd") == 0) { Delta_SpPID.Kd = val; changed = true; }
-        else if (strcmp(key, "Trace_Kp") == 0)    { TracePID.Kp = val; changed = true; }
-        else if (strcmp(key, "Trace_Ki") == 0)    { TracePID.Ki = val; changed = true; }
-        else if (strcmp(key, "Trace_Kd") == 0)    { TracePID.Kd = val; changed = true; }
-        else if (strcmp(key, "Angle_Kp") == 0)    { AnglePID.Kp = val; changed = true; }
-        else if (strcmp(key, "Angle_Ki") == 0)    { AnglePID.Ki = val; changed = true; }
-        else if (strcmp(key, "Angle_Kd") == 0)    { AnglePID.Kd = val; changed = true; }
-    }
-    fclose(f);
-
-    if (changed)
-    {
-        remove(TUNE_FILE);
-        printf("[TUNE] l=%.0f/%.2f/%.3f r=%.0f/%.2f/%.3f d=%.0f/%.2f/%.3f t=%.1f/%.2f/%.3f a=%.4f/%.2f/%.3f\n",
-               Speed_lPID.Kp, Speed_lPID.Ki, Speed_lPID.Kd,
-               Speed_rPID.Kp, Speed_rPID.Ki, Speed_rPID.Kd,
-               Delta_SpPID.Kp, Delta_SpPID.Ki, Delta_SpPID.Kd,
-               TracePID.Kp, TracePID.Ki, TracePID.Kd,
-               AnglePID.Kp, AnglePID.Ki, AnglePID.Kd);
-    }
-}

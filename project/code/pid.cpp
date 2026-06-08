@@ -35,7 +35,7 @@ float PID_Incremental_Calculate(PID_TypeDef *pid, float feedback, float setpoint
                    + pid->Ki * pid->error
                    + pid->Kd * (pid->error - 2 * pid->last_error + pid->prev_error);
 
-    // 输出累加 + 限幅 + 积分限幅
+    // 输出累加 + 限幅
     pid->output += delta_u;
     if(pid->output >  pid->output_limit)  pid->output =  pid->output_limit;
     if(pid->output < -pid->output_limit)  pid->output = -pid->output_limit;
@@ -47,7 +47,7 @@ float PID_Incremental_Calculate(PID_TypeDef *pid, float feedback, float setpoint
     return pid->output;
 }
 
-//==================== 位置式 PID（外环：寻迹/位置控制）====================
+//==================== 位置式 PID ====================
 float PID_Positional_Calculate(PID_TypeDef *pid, float feedback, float setpoint)
 {
     if(pid == NULL) return 0.0f;
@@ -55,18 +55,27 @@ float PID_Positional_Calculate(PID_TypeDef *pid, float feedback, float setpoint)
     // 计算当前偏差
     pid->error = setpoint - feedback;
 
-    float I_THRESHOLD = 3;
-    if ((pid->error/setpoint) < I_THRESHOLD)
+    // 积分分离：误差变化率大 → 系统在暂态 → 冻结积分
+    // 变化率小 → 已趋稳态 → 激活积分消静差。不受滞后影响
+    if (pid->Ki > 0.001f)
     {
-        // 积分累加 + 积分限幅
-        pid->integral += pid->Ki * pid->error;
-        if(pid->integral >  pid->integral_limit)  pid->integral =  pid->integral_limit;
-        if(pid->integral < -pid->integral_limit)  pid->integral = -pid->integral_limit;
+        float de = fabs(pid->error - pid->last_error);  // |Δerror|
+        float DE_THRESH = 0.005f;  // 误差每周期变化 < 此值认为系统稳定
+        if (de < DE_THRESH)
+        {
+            pid->integral += pid->Ki * pid->error;
+            if(pid->integral >  pid->integral_limit)  pid->integral =  pid->integral_limit;
+            if(pid->integral < -pid->integral_limit)  pid->integral = -pid->integral_limit;
+        }
+        // else: 误差太大，冻结积分，防止风up
     }
     else
-        pid->integral = 0;
-   
-    // 位置式PID公式
+    {
+        // Ki=0，跳过积分
+        pid->integral = 0.0f;
+    }
+
+    // 位置式 PID 公式
     float output =  pid->Kp * pid->error
                   + pid->integral
                   + pid->Kd * (pid->error - pid->last_error);
