@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
+set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 # 基础路径与项目名称配置
 set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
 get_filename_component(PARENT_DIR ${CURRENT_DIR}/.. ABSOLUTE)  
