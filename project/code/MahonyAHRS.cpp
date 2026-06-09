@@ -1,5 +1,5 @@
-/*
 #include "zf_common_headfile.hpp"
+#include <chrono>
 
 //-------------------------------------------------------------------------------------------
 float twoKi;
@@ -15,7 +15,6 @@ int16 imu_mag_x = 0,imu_mag_y = 0,imu_mag_z = 0;
 icm_param_t icm_data;
 euler_param_t eulerAngle;
 
-zf_device_imu imu_dev;
 
 #define twoKpDef	(2.0f * 1.0f)
 #define twoKiDef	(2.0f * 0.0f)
@@ -28,9 +27,13 @@ float q1_ref = 0.0f;
 float q2_ref = 0.0f;
 float q3_ref = 0.0f;
 
-uint32_t mahony_update_count = 0;       // 更新次数计数器
-uint32_t mahony_calibrate_target = 0;   // 目标计数（8秒对应的调用次数）
-uint8_t  mahony_is_calibrated = 0;      // 是否已经完成校准标志位
+float   mahony_calibrate_elapsed = 0.0f;   // 已校准时间（秒）
+uint8_t mahony_is_calibrated = 0;          // 是否已经完成校准标志位
+
+// yaw 解缠状态
+static float last_yaw_raw = 0;
+static float yaw_accum    = 0;
+static bool  first_yaw    = true;
 
 //-------------------------------------------------------------------------------------------
 // 快速开方函数（不需要修改）
@@ -119,6 +122,11 @@ void Mahony_ResetZero(void)
     q1_ref = q1;
     q2_ref = q2;
     q3_ref = q3;
+
+    // 同步重置 yaw 解缠
+    yaw_accum = 0;
+    last_yaw_raw = 0;
+    first_yaw = true;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -148,9 +156,25 @@ void QuaternionsToEulerAngle(void)
     pitch_mahony = atan2f(2.0f * (out_q0*out_q1 + out_q2*out_q3), 1.0f - 2.0f * (out_q1*out_q1 + out_q2*out_q2));
     eulerAngle.pitch = pitch_mahony * 57.29578f;
 
-    // 偏航
+    // 偏航（±180°，会跳变）
     yaw_mahony = atan2f(2.0f * (out_q1*out_q2 + out_q0*out_q3), 1.0f - 2.0f * (out_q2*out_q2 + out_q3*out_q3));
     eulerAngle.yaw = yaw_mahony * 57.29578f;
+
+    // 连续解缠 yaw（越过 ±180° 不跳变，累加真实转角）
+    if (first_yaw)
+    {
+        yaw_accum = eulerAngle.yaw;
+        first_yaw = false;
+    }
+    else
+    {
+        float delta = eulerAngle.yaw - last_yaw_raw;
+        if (delta > 180.0f)       delta -= 360.0f;
+        else if (delta < -180.0f) delta += 360.0f;
+        yaw_accum += delta;
+    }
+    last_yaw_raw = eulerAngle.yaw;
+    eulerAngle.yaw_cont = yaw_accum;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -201,7 +225,7 @@ void Get_InitAngle(float ax, float ay, float az)
     q3 *= recipNorm;
 }
 
-void Mahony_Init(float sampleFrequency)
+void Mahony_Init(void)
 {
     twoKi = twoKiDef;
     q0 = 1.0f;
@@ -212,15 +236,12 @@ void Mahony_Init(float sampleFrequency)
     integralFBx = 0.0f;
     integralFBy = 0.0f;
     integralFBz = 0.0f;
-    invSampleFreq = 1.0f / sampleFrequency;
+    invSampleFreq = 0.02f;  // 默认 50Hz，首帧会被 chrono dt 覆盖
 
-    // ==============================================
-    // 初始化 5秒校准所需变量
-    // ==============================================
-    mahony_update_count = 0;
-    mahony_calibrate_target = (uint32_t)(5.0f * sampleFrequency); // 设为 5 秒
+    // 时间基准校准（用实际 dt，sampleFrequency 仅作初始 dt 参考）
+    mahony_calibrate_elapsed = 0.0f;
     mahony_is_calibrated = 0;
-    
+
     // 初始化时没有安装误差补偿（基准为标准重力坐标系）
     q0_ref = 1.0f;
     q1_ref = 0.0f;
@@ -230,7 +251,16 @@ void Mahony_Init(float sampleFrequency)
 
 void Mahony_update(void)
 {
-    // 读取逐飞 IMU 原始数据
+    // ---- 计算实际 dt（替代固定 invSampleFreq）----
+    static auto last_time = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    float dt = std::chrono::duration<float>(now - last_time).count();
+    last_time = now;
+
+    // 首帧 / 异常帧保护：默认 20ms（50Hz）
+    if (dt <= 0.0f || dt > 0.1f) dt = 0.02f;
+
+    // ---- 读取逐飞 IMU 原始数据 ----
     imu_acc_x = imu_dev.get_acc_x();
     imu_acc_y = imu_dev.get_acc_y();
     imu_acc_z = imu_dev.get_acc_z();
@@ -239,37 +269,35 @@ void Mahony_update(void)
     imu_gyro_y = imu_dev.get_gyro_y();
     imu_gyro_z = imu_dev.get_gyro_z();
 
-    // ==============================================
-    // 把逐飞数据 → 直接填入 Mahony 的 icm_data
-    // ==============================================
-    icm_data.acc_x = imu_acc_x / 2048.0f;    // 加速度单位：g
+    // ---- 把逐飞数据 → 填入 icm_data ----
+    icm_data.acc_x = imu_acc_x / 2048.0f;
     icm_data.acc_y = imu_acc_y / 2048.0f;
     icm_data.acc_z = imu_acc_z / 2048.0f;
 
-    icm_data.gyro_x = imu_gyro_x * 0.001065f; // 陀螺仪单位：rad/s
+    icm_data.gyro_x = imu_gyro_x * 0.001065f;
     icm_data.gyro_y = imu_gyro_y * 0.001065f;
     icm_data.gyro_z = imu_gyro_z * 0.001065f;
 
-    // 计算姿态
+    // ---- 用实际 dt 驱动积分 ----
+    invSampleFreq = dt;
+
+    // ---- 计算姿态 ----
     Mahony_GetAngles();
 
-    // ==============================================
-    // 5秒校准逻辑与屏蔽输出
-    // ==============================================
+    // ---- 5秒时间校准（累积 dt，不受帧率影响）----
     if (mahony_is_calibrated == 0)
     {
-        mahony_update_count++;
-        
-        // 强制在前 5 秒输出 0，防止外部控制程序读取到未收敛或未校准的角度
-        eulerAngle.roll = 0.0f;
-        eulerAngle.pitch = 0.0f;
-        eulerAngle.yaw = 0.0f;
+        mahony_calibrate_elapsed += dt;
 
-        // 达到 5 秒对应的更新次数
-        if (mahony_update_count >= mahony_calibrate_target)
+        eulerAngle.roll     = 0.0f;
+        eulerAngle.pitch    = 0.0f;
+        eulerAngle.yaw      = 0.0f;
+        eulerAngle.yaw_cont = 0.0f;
+
+        if (mahony_calibrate_elapsed >= 5.0f)
         {
-            Mahony_ResetZero();       // 将当前四元数设定为基准
-            mahony_is_calibrated = 1; // 标记校准完成，以后正常输出
+            Mahony_ResetZero();
+            mahony_is_calibrated = 1;
         }
     }
 }
@@ -293,14 +321,18 @@ void Mahony_Manual_ResetZero(void)
     integralFBz = 0.0f;
 
     // 3. 顺便把当前输出的欧拉角强制覆写为 0
-    // 确保在这个控制周期内，外部控制器读取到的姿态瞬间归零
     eulerAngle.roll = 0.0f;
     eulerAngle.pitch = 0.0f;
     eulerAngle.yaw = 0.0f;
+    eulerAngle.yaw_cont = 0.0f;
+
+    // 同步重置 yaw 解缠
+    yaw_accum = 0;
+    last_yaw_raw = 0;
+    first_yaw = true;
 }
 
 uint8_t Is_Mahony_Ready(void)
 {
     return mahony_is_calibrated;
 }
-*/

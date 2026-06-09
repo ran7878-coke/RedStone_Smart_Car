@@ -94,8 +94,8 @@ void line_follow_pid_control(void)
 
     // ===================== 3. 差速环：编码器 → 差速 =====================
     //给出目标速度，基础 + 角度环输出 + 角度前馈
-    target_lspeed = BASE_SPEED + steer + kf_turn * target_omega;
-    target_rspeed = BASE_SPEED - steer - kf_turn * target_omega;
+    target_lspeed = BASE_SPEED   + steer + kf_turn * target_omega;
+    target_rspeed = BASE_SPEED   - steer - kf_turn * target_omega;
     target_delta_Sp = target_lspeed - target_rspeed;
     if ( target_delta_Sp > 0.1)
     {

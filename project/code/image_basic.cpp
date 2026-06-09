@@ -302,8 +302,6 @@ void search_l_r(uint16 break_flag, uint8(*image)[IMAGE_W], uint16 *l_stastic, ui
 		if (r_data_statics >= USE_num - 1 || l_data_statics >= USE_num - 1)
 		{
 			//printf("数组即将溢出！r_data_statics=%d, l_data_statics=%d\n", r_data_statics, l_data_statics);
-		    r_data_statics = 0;  
-            l_data_statics = 0;
 			break; // 强制退出循环
 		}
 		if(break_flag == 0) break;
@@ -523,7 +521,7 @@ uint16 cnt = 0;
 float get_center_error(void)
 {
 	sum = cnt = 0;
-    // 取图像底部30行（y从90到119，共30行），越靠近小车越重要
+    // 取图像底部30行（y从90到112），越靠近小车越重要
     for(uint8 y = IMAGE_H - 30; y < IMAGE_H - 8; y++){
         // 过滤无效值（0和超宽值）
         if(center_line[y] > 5 && center_line[y] < IMAGE_W - 5){
@@ -676,7 +674,7 @@ else{
 		//当然也有多组边线的找法，但是个人感觉很繁琐，不建议
 		ips200.draw_point(center_line[i], i, uesr_GREEN);//显示起点 显示中线	
 		ips200.draw_point(l_border[i], i, uesr_RED);//显示起点 显示左边线
-		ips200.draw_point(r_border[i], i, uesr_RED);//显示起点 显示右边线
+		ips200.draw_point(r_border[i], i, uesr_BLUE);//显示起点 显示右边线
 	}
 
 }
